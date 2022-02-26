@@ -120,12 +120,47 @@ LCD_5x8DOTS = 0x00      # 0b00000
 
 
 class RGB1602:
-    def __init__(self, col=16, row=2):
-        self._row = row
-        self._col = col
+    # Set dimensions as class variables.
+    # Hint is in the class name!
+    COLS = 16
+    ROWS = 2
 
-        self._showfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS
-        self.begin(self._row, self._col)
+    WHITE = (0xFF, 0xFF, 0xFF)
+
+    def __init__(self):
+        self._reset_display()
+
+    def _reset_display(self):
+        """Initialise the display to its standard settings.
+
+        It is unclear to me (rjw) why some of these are necessary, as
+        there seems to be no difference in removing some of the below.
+        *However* I have not removed what remains because it wasn't
+        *obviously unnecessary*, unlike the now-removed lines.
+        """
+        # Send function set command sequence
+        show_function = LCD_8BITMODE | LCD_2LINE | LCD_5x8DOTS
+        self.command(LCD_FUNCTIONSET | show_function)
+        time.sleep(0.05)
+
+        # turn the display on with no cursor or blinking default
+        show_control = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF
+        self.command(LCD_DISPLAYCONTROL | show_control)
+
+        self.clear()
+
+        # Initialize to default text direction (for romance languages)
+        self._showmode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT
+        self.command(LCD_ENTRYMODESET | self._showmode)
+
+        # backlight init
+        self.set_RGB_register("REG_MODE1", 0)
+        # set LEDs controllable by both PWM and GRPPWM registers
+        self.set_RGB_register("REG_OUTPUT", 0xFF)
+        # set MODE2 values
+        # 0010 0000 -> 0x20  (DMBLNK to 1, ie blinky mode)
+        self.set_RGB_register("REG_MODE2", 0x20)
+        self.setColorWhite()
 
     def command(self, cmd: int):
         assert 0 <= cmd <= 255, f"Command {cmd} out of range."
@@ -147,7 +182,11 @@ class RGB1602:
         assert 0 <= data <= 255, f"Data {data} is out of range."
         setattr(rgb_registers, reg, data)
 
-    def setRGB(self, r, g, b):
+    def setRGB(self, r: int, g: int, b: int):
+        assert 0 <= r <= 255, f"Red value {r} out of range."
+        assert 0 <= g <= 255, f"Green value {g} out of range."
+        assert 0 <= b <= 255, f"Blue value {b} out of range."
+
         self.set_RGB_register("REG_RED", r)
         self.set_RGB_register("REG_GREEN", g)
         self.set_RGB_register("REG_BLUE", b)
@@ -172,49 +211,6 @@ class RGB1602:
         for x in bytearray(arg, "utf-8"):
             self.write(x)
 
-    def display(self):
-        self._showcontrol |= LCD_DISPLAYON
-        self.command(LCD_DISPLAYCONTROL | self._showcontrol)
-
-    def begin(self, cols, lines):
-        if lines > 1:
-            self._showfunction |= LCD_2LINE
-
-        self._numlines = lines
-        self._currline = 0
-
-        time.sleep(0.05)
-
-        # Send function set command sequence
-        self.command(LCD_FUNCTIONSET | self._showfunction)
-        # delayMicroseconds(4500);  # wait more than 4.1ms
-        time.sleep(0.005)
-        # second try
-        self.command(LCD_FUNCTIONSET | self._showfunction)
-        # delayMicroseconds(150);
-        time.sleep(0.005)
-        # third go
-        self.command(LCD_FUNCTIONSET | self._showfunction)
-        # finally, set # lines, font size, etc.
-        self.command(LCD_FUNCTIONSET | self._showfunction)
-        # turn the display on with no cursor or blinking default
-        self._showcontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF
-        self.display()
-        # clear it off
-        self.clear()
-        # Initialize to default text direction (for romance languages)
-        self._showmode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT
-        # set the entry mode
-        self.command(LCD_ENTRYMODESET | self._showmode)
-        # backlight init
-        self.set_RGB_register("REG_MODE1", 0)
-        # set LEDs controllable by both PWM and GRPPWM registers
-        self.set_RGB_register("REG_OUTPUT", 0xFF)
-        # set MODE2 values
-        # 0010 0000 -> 0x20  (DMBLNK to 1, ie blinky mode)
-        self.set_RGB_register("REG_MODE2", 0x20)
-        self.setColorWhite()
-
     def set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
         if mode == 1:
@@ -225,4 +221,4 @@ class RGB1602:
             raise ValueError(f"Unknown mode: {repr(mode)}")
 
     def setColorWhite(self):
-        self.setRGB(255, 255, 255)
+        self.setRGB(*self.WHITE)
