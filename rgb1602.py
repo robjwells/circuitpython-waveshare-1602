@@ -130,9 +130,9 @@ LCD_5x8DOTS = 0x00      # 0b00000
 # fmt: on
 
 
-class RGB1602:
+class Screen:
     # Set dimensions as class variables.
-    # Hint is in the class name!
+    # Hint is in the module name (LCD1602)!
     COLS = 16
     ROWS = 2
 
