@@ -372,6 +372,13 @@ class Screen:
         for x in bytearray(arg, "utf-8"):
             self._write_byte(x)
 
+    def update(self, first_line: str, second_line: str | None = None) -> None:
+        self.clear()
+        self.printout(first_line[:self.COLS])
+        if second_line is not None:
+            self.setCursor(0, 1)
+            self.printout(second_line[:self.COLS])
+
     def set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
         if mode == 1:
