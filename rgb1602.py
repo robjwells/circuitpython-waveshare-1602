@@ -130,12 +130,10 @@ class RGB1602:
     def command(self, cmd: int):
         assert 0 <= cmd <= 255, f"Command {cmd} out of range."
         lcd_registers.command_register = cmd
-        # RGB1602_I2C.writeto_mem(LCD_ADDRESS, LCD_SETDDRAMADDR, chr(cmd))
 
     def write(self, data):
         assert 0 <= data <= 255, f"Command {data} out of range."
         lcd_registers.data_register = data
-        # RGB1602_I2C.writeto_mem(LCD_ADDRESS, LCD_SETCGRAMADDR, chr(data))
 
     def set_RGB_register(self, reg: str, data: int) -> None:
         assert reg in (
@@ -148,7 +146,6 @@ class RGB1602:
         ), f"Register {reg} is not a known register."
         assert 0 <= data <= 255, f"Data {data} is out of range."
         setattr(rgb_registers, reg, data)
-        # RGB1602_I2C.writeto_mem(RGB_ADDRESS, reg, chr(data))
 
     def setRGB(self, r, g, b):
         self.set_RGB_register("REG_RED", r)
