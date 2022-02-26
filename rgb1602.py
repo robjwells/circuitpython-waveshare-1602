@@ -38,13 +38,13 @@ lcd_device = I2CDevice(comm_port, LCD_ADDRESS)
 lcd_registers = LCDControl(lcd_device)
 
 # RGB registers
-REG_RED = 0x04  # 0b_1__    pwm2
-REG_GREEN = 0x03  # 0b__11    pwm1
-REG_BLUE = 0x02  # 0b__1_    pwm0
+REG_RED = 0x04      # 0b_1__    pwm2
+REG_GREEN = 0x03    # 0b__11    pwm1
+REG_BLUE = 0x02     # 0b__1_    pwm0
 
-REG_MODE1 = 0x00  # 0b____
-REG_MODE2 = 0x01  # 0b___1
-REG_OUTPUT = 0x08  # 0b1___
+REG_MODE1 = 0x00    # 0b____
+REG_MODE2 = 0x01    # 0b___1
+REG_OUTPUT = 0x08   # 0b1___
 
 
 class RGBControl:
@@ -91,32 +91,32 @@ LCD_FUNCTIONSET = 0x20  # 0b__1_____
 # The documentation doesn't mention 8/4 bit mode.
 
 # flags for display entry mode
-LCD_ENTRYRIGHT = 0x00  # 0b00
-LCD_ENTRYLEFT = 0x02  # 0b10
+LCD_ENTRYRIGHT = 0x00   # 0b00
+LCD_ENTRYLEFT = 0x02    # 0b10
 LCD_ENTRYSHIFTINCREMENT = 0x01  # 0b01
 LCD_ENTRYSHIFTDECREMENT = 0x00  # 0b00
 
 # flags for display on/off control
-LCD_DISPLAYON = 0x04  # 0b1__
-LCD_CURSORON = 0x02  # 0b_1_
-LCD_BLINKON = 0x01  # 0b__1
+LCD_DISPLAYON = 0x04    # 0b1__
+LCD_CURSORON = 0x02     # 0b_1_
+LCD_BLINKON = 0x01      # 0b__1
 
-LCD_DISPLAYOFF = 0x00  # 0b000
-LCD_CURSOROFF = 0x00  # 0b000
-LCD_BLINKOFF = 0x00  # 0b000
+LCD_DISPLAYOFF = 0x00   # 0b000
+LCD_CURSOROFF = 0x00    # 0b000
+LCD_BLINKOFF = 0x00     # 0b000
 
 # flags for display/cursor shift
 LCD_DISPLAYMOVE = 0x08  # 0b1000
-LCD_CURSORMOVE = 0x00  # 0b0000
-LCD_MOVERIGHT = 0x04  # 0b0100
-LCD_MOVELEFT = 0x00  # 0b0000
+LCD_CURSORMOVE = 0x00   # 0b0000
+LCD_MOVERIGHT = 0x04    # 0b0100
+LCD_MOVELEFT = 0x00     # 0b0000
 
 # flags for function set
-LCD_8BITMODE = 0x10  # 0b10000
-LCD_4BITMODE = 0x00  # 0b00000
-LCD_2LINE = 0x08  # 0b01000
-LCD_1LINE = 0x00  # 0b00000
-LCD_5x8DOTS = 0x00  # 0b00000
+LCD_8BITMODE = 0x10     # 0b10000
+LCD_4BITMODE = 0x00     # 0b00000
+LCD_2LINE = 0x08        # 0b01000
+LCD_1LINE = 0x00        # 0b00000
+LCD_5x8DOTS = 0x00      # 0b00000
 
 
 class RGB1602:
