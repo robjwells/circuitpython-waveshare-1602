@@ -8,6 +8,8 @@ from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_struct import UnaryStruct
 from busio import I2C
 
+# NOTE: Change these pins to match your circuit.
+# On the RPi Pico (eg) there lots of I2C pins.
 RGB1602_SDA = board.GP26
 RGB1602_SCL = board.GP27
 
