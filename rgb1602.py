@@ -37,6 +37,8 @@ comm_port = RGB1602_I2C
 lcd_device = I2CDevice(comm_port, LCD_ADDRESS)
 lcd_registers = LCDControl(lcd_device)
 
+# fmt: off
+
 # RGB registers
 REG_RED = 0x04      # 0b_1__    pwm2
 REG_GREEN = 0x03    # 0b__11    pwm1
@@ -45,6 +47,8 @@ REG_BLUE = 0x02     # 0b__1_    pwm0
 REG_MODE1 = 0x00    # 0b____
 REG_MODE2 = 0x01    # 0b___1
 REG_OUTPUT = 0x08   # 0b1___
+
+# fmt: on
 
 
 class RGBControl:
@@ -63,36 +67,39 @@ class RGBControl:
 rgb_device = I2CDevice(comm_port, RGB_ADDRESS)
 rgb_registers = RGBControl(rgb_device)
 
-# Commands -- bits of an 8-bit word
-LCD_CLEARDISPLAY = 0x01  # 0b_______1
-LCD_RETURNHOME = 0x02  # 0b______1_
 
-LCD_ENTRYMODESET = 0x04  # 0b_____1__
+# fmt: off
+
+# Commands -- bits of an 8-bit word
+LCD_CLEARDISPLAY = 0x01     # 0b_______1
+LCD_RETURNHOME = 0x02       # 0b______1_
+
+LCD_ENTRYMODESET = 0x04     # 0b_____1__
 # Used with bits I/D SH:
 #   I/D: 0x02 for entry left, 0x00 for entry right
 #   SH: 0x01 for shift increment, 0x00 for decrement
 # See "flags for display entry mode"
 
-LCD_DISPLAYCONTROL = 0x08  # 0b____1___
+LCD_DISPLAYCONTROL = 0x08   # 0b____1___
 # Used with bits DCB:
 #   D: display on/off,
 #   C: cursor on/off,
 #   B: blink cursor on/off
 # These are listed below as "flags for display on/off control"
 
-LCD_CURSORSHIFT = 0x10  # 0b___1____
+LCD_CURSORSHIFT = 0x10      # 0b___1____
 # Cursor or Display Shift
 # Uses bits S/C R/L - -:
 #   S/C: 0x08 for screen or 0x00 for cursor
 #   R/L: 0x04 for right or 0x00 for left
 
-LCD_FUNCTIONSET = 0x20  # 0b__1_____
+LCD_FUNCTIONSET = 0x20      # 0b__1_____
 # Sets number of display lines, and display font type.
 # The documentation doesn't mention 8/4 bit mode.
 
 # flags for display entry mode
-LCD_ENTRYRIGHT = 0x00   # 0b00
-LCD_ENTRYLEFT = 0x02    # 0b10
+LCD_ENTRYRIGHT = 0x00           # 0b00
+LCD_ENTRYLEFT = 0x02            # 0b10
 LCD_ENTRYSHIFTINCREMENT = 0x01  # 0b01
 LCD_ENTRYSHIFTDECREMENT = 0x00  # 0b00
 
@@ -117,6 +124,8 @@ LCD_4BITMODE = 0x00     # 0b00000
 LCD_2LINE = 0x08        # 0b01000
 LCD_1LINE = 0x00        # 0b00000
 LCD_5x8DOTS = 0x00      # 0b00000
+
+# fmt: on
 
 
 class RGB1602:
