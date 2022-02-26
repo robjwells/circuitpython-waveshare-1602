@@ -166,7 +166,7 @@ class RGB1602:
         assert 0 <= cmd <= 255, f"Command {cmd} out of range."
         lcd_registers.command_register = cmd
 
-    def write(self, data):
+    def _write_byte(self, data: int) -> None:
         assert 0 <= data <= 255, f"Command {data} out of range."
         lcd_registers.data_register = data
 
@@ -209,7 +209,7 @@ class RGB1602:
             arg = str(arg)
 
         for x in bytearray(arg, "utf-8"):
-            self.write(x)
+            self._write_byte(x)
 
     def set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
