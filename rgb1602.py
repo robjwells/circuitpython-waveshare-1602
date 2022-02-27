@@ -301,29 +301,29 @@ class Screen:
         """
         # Send function set command sequence
         show_function = LCD_8BITMODE | LCD_2LINE | LCD_5x8DOTS
-        self.command(LCD_FUNCTIONSET | show_function)
+        self._command(LCD_FUNCTIONSET | show_function)
         time.sleep(0.05)
 
         # turn the display on with no cursor or blinking default
         show_control = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF
-        self.command(LCD_DISPLAYCONTROL | show_control)
+        self._command(LCD_DISPLAYCONTROL | show_control)
 
         self.clear()
 
         # Initialize to default text direction (for romance languages)
         self._showmode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT
-        self.command(LCD_ENTRYMODESET | self._showmode)
+        self._command(LCD_ENTRYMODESET | self._showmode)
 
         # backlight init
-        self.set_RGB_register("REG_MODE1", 0)
+        self._set_rgb_register("REG_MODE1", 0)
         # set LEDs controllable by both PWM and GRPPWM registers
-        self.set_RGB_register("REG_OUTPUT", 0xFF)
+        self._set_rgb_register("REG_OUTPUT", 0xFF)
         # set MODE2 values
         # 0010 0000 -> 0x20  (DMBLNK to 1, ie blinky mode)
-        self.set_RGB_register("REG_MODE2", 0x20)
+        self._set_rgb_register("REG_MODE2", 0x20)
         self.set_white()
 
-    def command(self, cmd: int):
+    def _command(self, cmd: int):
         assert 0 <= cmd <= 255, f"Command {cmd} out of range."
         lcd_registers.command_register = cmd
 
@@ -331,7 +331,7 @@ class Screen:
         assert 0 <= data <= 255, f"Command {data} out of range."
         lcd_registers.data_register = data
 
-    def set_RGB_register(self, reg: str, data: int) -> None:
+    def _set_rgb_register(self, reg: str, data: int) -> None:
         assert reg in (
             "REG_RED",
             "REG_BLUE",
@@ -343,14 +343,14 @@ class Screen:
         assert 0 <= data <= 255, f"Data {data} is out of range."
         setattr(rgb_registers, reg, data)
 
-    def setRGB(self, r: int, g: int, b: int):
+    def set_rgb(self, r: int, g: int, b: int):
         assert 0 <= r <= 255, f"Red value {r} out of range."
         assert 0 <= g <= 255, f"Green value {g} out of range."
         assert 0 <= b <= 255, f"Blue value {b} out of range."
 
-        self.set_RGB_register("REG_RED", r)
-        self.set_RGB_register("REG_GREEN", g)
-        self.set_RGB_register("REG_BLUE", b)
+        self._set_rgb_register("REG_RED", r)
+        self._set_rgb_register("REG_GREEN", g)
+        self._set_rgb_register("REG_BLUE", b)
 
     def position_cursor(self, *, col: int, row: int):
         assert (
@@ -370,7 +370,7 @@ class Screen:
         RGB1602_I2C.unlock()
 
     def clear(self):
-        self.command(LCD_CLEARDISPLAY)
+        self._command(LCD_CLEARDISPLAY)
         time.sleep(0.002)
 
     def write_bytes(self, arg: bytes):
@@ -397,9 +397,9 @@ class Screen:
     def set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
         if mode == 1:
-            self.set_RGB_register("REG_MODE1", value)
+            self._set_rgb_register("REG_MODE1", value)
         elif mode == 2:
-            self.set_RGB_register("REG_MODE2", value)
+            self._set_rgb_register("REG_MODE2", value)
         else:
             raise ValueError(f"Unknown mode: {repr(mode)}")
 
@@ -407,7 +407,7 @@ class Screen:
         self.set_css_colour("white")
 
     def set_css_colour(self, colour_name: str) -> None:
-        self.setRGB(*CSS_COLOURS[colour_name])
+        self.set_rgb(*CSS_COLOURS[colour_name])
 
     def set_css_color(self, color_name: str) -> None:
         self.set_css_colour(color_name)
