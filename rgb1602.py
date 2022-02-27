@@ -1,7 +1,7 @@
 # This file converted from MicroPython to CircuitPython
 # by robjwells. Original copyright Waveshare.
 
-import time
+from time import sleep
 
 import board
 from adafruit_bus_device.i2c_device import I2CDevice
@@ -302,7 +302,7 @@ class Screen:
         # Send function set command sequence
         show_function = LCD_8BITMODE | LCD_2LINE | LCD_5x8DOTS
         self._command(LCD_FUNCTIONSET | show_function)
-        time.sleep(0.05)
+        sleep(0.05)
 
         # turn the display on with no cursor or blinking default
         show_control = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF
@@ -371,7 +371,7 @@ class Screen:
 
     def clear(self):
         self._command(LCD_CLEARDISPLAY)
-        time.sleep(0.002)
+        sleep(0.002)
 
     def write_bytes(self, arg: bytes):
         for byte in arg:
