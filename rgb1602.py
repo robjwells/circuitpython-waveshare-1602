@@ -445,3 +445,10 @@ def special_char(c: str) -> bytes:
         return chars[c]
     except KeyError:
         raise ValueError(f"Character {repr(c)} is not a registered special character.")
+
+
+def show_css_colours(screen: Screen, delay: int = 2) -> None:
+    for colour_name, rgb in sorted(CSS_COLOURS.items()):
+        screen.set_rgb(*rgb)
+        screen.update("CSS named colour", colour_name)
+        sleep(delay)
