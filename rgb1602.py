@@ -389,6 +389,10 @@ class Screen:
         for byte in arg:
             self._write_byte(byte)
 
+    def write_at_position(self, text: str | bytes, *, col: int, row: int) -> None:
+        self.position_cursor(col=col, row=row)
+        self.write_bytes(self._ensure_bytes(text))
+
     @staticmethod
     def _ensure_bytes(s: str | bytes) -> bytes:
         if isinstance(s, bytes):
