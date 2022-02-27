@@ -352,11 +352,19 @@ class Screen:
         self.set_RGB_register("REG_GREEN", g)
         self.set_RGB_register("REG_BLUE", b)
 
-    def setCursor(self, col, row):
+    def position_cursor(self, *, col: int, row: int):
+        assert (
+            0 <= col < self.COLS
+        ), f"Column {col} is out of bounds (max {self.COLS - 1})."
+        assert (
+            0 <= row < self.ROWS
+        ), f"Row {row} is out of bounds (max {self.ROWS - 1})."
+
         if row == 0:
             col |= 0x80
         else:
             col |= 0xC0
+
         assert RGB1602_I2C.try_lock(), "Could not lock"
         RGB1602_I2C.writeto(LCD_ADDRESS, bytearray([LCD_SETDDRAMADDR, col]))
         RGB1602_I2C.unlock()
@@ -374,10 +382,10 @@ class Screen:
 
     def update(self, first_line: str, second_line: str | None = None) -> None:
         self.clear()
-        self.printout(first_line[:self.COLS])
+        self.printout(first_line[: self.COLS])
         if second_line is not None:
-            self.setCursor(0, 1)
-            self.printout(second_line[:self.COLS])
+            self.position_cursor(col=0, row=1)
+            self.printout(second_line[: self.COLS])
 
     def set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
