@@ -343,6 +343,15 @@ class Screen:
         assert 0 <= data <= 255, f"Data {data} is out of range."
         setattr(rgb_registers, reg, data)
 
+    def _set_rgb_mode(self, mode, value: int) -> None:
+        assert 0 <= value <= 0xFF, "Value not in range."
+        if mode == 1:
+            self._set_rgb_register("REG_MODE1", value)
+        elif mode == 2:
+            self._set_rgb_register("REG_MODE2", value)
+        else:
+            raise ValueError(f"Unknown mode: {repr(mode)}")
+
     def set_rgb(self, r: int, g: int, b: int):
         assert 0 <= r <= 255, f"Red value {r} out of range."
         assert 0 <= g <= 255, f"Green value {g} out of range."
@@ -377,7 +386,8 @@ class Screen:
         for byte in arg:
             self._write_byte(byte)
 
-    def _ensure_bytes(self, s: str | bytes) -> bytes:
+    @staticmethod
+    def _ensure_bytes(s: str | bytes) -> bytes:
         if isinstance(s, bytes):
             return s
         # Not JIS X 0213 but close enough if you’re careful.
@@ -393,15 +403,6 @@ class Screen:
             self.position_cursor(col=0, row=1)
             second = self._ensure_bytes(second_line)
             self.write_bytes(second[: self.COLS])
-
-    def set_rgb_mode(self, mode, value: int) -> None:
-        assert 0 <= value <= 0xFF, "Value not in range."
-        if mode == 1:
-            self._set_rgb_register("REG_MODE1", value)
-        elif mode == 2:
-            self._set_rgb_register("REG_MODE2", value)
-        else:
-            raise ValueError(f"Unknown mode: {repr(mode)}")
 
     def set_white(self) -> None:
         self.set_css_colour("white")
