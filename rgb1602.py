@@ -288,6 +288,8 @@ class Screen:
     COLS = 16
     ROWS = 2
 
+    rgb: tuple[int, int, int]
+
     def __init__(self):
         self._reset_display()
 
@@ -360,6 +362,7 @@ class Screen:
         self._set_rgb_register("REG_RED", r)
         self._set_rgb_register("REG_GREEN", g)
         self._set_rgb_register("REG_BLUE", b)
+        self.rgb = (r, g, b)
 
     def position_cursor(self, *, col: int, row: int):
         assert (
@@ -449,7 +452,9 @@ def special_char(c: str) -> bytes:
 
 
 def show_css_colours(screen: Screen, delay: int = 2) -> None:
+    original_rgb = screen.rgb
     for colour_name, rgb in sorted(CSS_COLOURS.items()):
         screen.set_rgb(*rgb)
         screen.update("CSS named colour", colour_name)
         sleep(delay)
+    screen.set_rgb(*original_rgb)
