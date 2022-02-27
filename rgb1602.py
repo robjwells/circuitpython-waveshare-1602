@@ -373,19 +373,26 @@ class Screen:
         self.command(LCD_CLEARDISPLAY)
         time.sleep(0.002)
 
-    def printout(self, arg):
-        if isinstance(arg, int):
-            arg = str(arg)
+    def write_bytes(self, arg: bytes):
+        for byte in arg:
+            self._write_byte(byte)
 
-        for x in bytearray(arg, "utf-8"):
-            self._write_byte(x)
+    def _ensure_bytes(self, s: str | bytes) -> bytes:
+        if isinstance(s, bytes):
+            return s
+        # Not JIS X 0213 but close enough if you’re careful.
+        return bytes(s, "jisx0213")
 
-    def update(self, first_line: str, second_line: str | None = None) -> None:
+    def update(
+        self, first_line: str | bytes, second_line: str | bytes | None = None
+    ) -> None:
+        first = self._ensure_bytes(first_line)
         self.clear()
-        self.printout(first_line[: self.COLS])
+        self.write_bytes(first[: self.COLS])
         if second_line is not None:
             self.position_cursor(col=0, row=1)
-            self.printout(second_line[: self.COLS])
+            second = self._ensure_bytes(second_line)
+            self.write_bytes(second[: self.COLS])
 
     def set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
