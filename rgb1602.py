@@ -411,3 +411,37 @@ class Screen:
 
     def set_css_color(self, color_name: str) -> None:
         self.set_css_colour(color_name)
+
+
+def special_char(c: str) -> bytes:
+    if c == "\\":
+        raise ValueError("\\ (backslash) is not in the character set.")
+    elif ord(c) < ord("}"):
+        # Everything matches ASCII up to }, except for \ -> ¥.
+        return c.encode("ascii")
+
+    chars = {
+        "→": b"\x7E",
+        "←": b"\x7F",
+        "•": b"\xA5",
+        "☐": b"\xDB",
+        "°": b"\xDF",
+        "alpha": b"\xE0",
+        "beta": b"\xE2",
+        "epsilon": b"\xE3",
+        "mu": b"\xE4",
+        "sigma": b"\xE5",
+        "rho": b"\xE6",
+        "√": b"\xE8",
+        "theta": b"\xF2",
+        "omega": b"\xF4",
+        "SIGMA": b"\xF6",
+        "pi": b"\xF7",
+        "÷": b"\xFD",
+        "block": b"\xFF",
+    }
+
+    try:
+        return chars[c]
+    except KeyError:
+        raise ValueError(f"Character {repr(c)} is not a registered special character.")
