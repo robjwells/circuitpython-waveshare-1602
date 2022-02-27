@@ -281,6 +281,19 @@ CSS_COLOURS: dict[str, tuple[int, int, int]] = {
 }
 CSS_COLORS = CSS_COLOURS
 
+WAVESHARE_COLOURS = {
+    "Deep violet": (148, 0, 110),
+    "Purple": (255, 0, 255),
+    "Blue and white": (144, 249, 15),
+    "Light blue": (0, 128, 60),
+    "Yellow": (255, 209, 0),
+    "Ghost white": (248, 248, 60),
+    "Dark blue": (80, 80, 145),
+    "Red": (255, 0, 0),
+    "Cyan": (0, 255, 0),
+}
+WAVESHARE_COLORS = WAVESHARE_COLOURS
+
 
 class Screen:
     # Set dimensions as class variables.
@@ -455,10 +468,42 @@ def special_char(c: str) -> bytes:
         raise ValueError(f"Character {repr(c)} is not a registered special character.")
 
 
-def show_css_colours(screen: Screen, delay: int = 2) -> None:
+def _show_colours(
+    screen: Screen,
+    delay: int,
+    colours: dict[str, tuple[int, int, int]],
+    colour_set_name: str,
+) -> None:
     original_rgb = screen.rgb
-    for colour_name, rgb in sorted(CSS_COLOURS.items()):
+    for colour_name, rgb in sorted(colours.items()):
         screen.set_rgb(*rgb)
-        screen.update("CSS named colour", colour_name)
+        screen.update(colour_set_name, colour_name)
         sleep(delay)
     screen.set_rgb(*original_rgb)
+
+
+def show_css_colours(screen: Screen, delay: int = 2) -> None:
+    _show_colours(screen, delay, CSS_COLOURS, "CSS named colour")
+
+
+def show_waveshare_colours(screen: Screen, delay: int = 2) -> None:
+    _show_colours(screen, delay, WAVESHARE_COLOURS, "Waveshare")
+
+
+def show_discoloration_sample(screen: Screen) -> None:
+    from math import sin
+
+    screen.update(f"Waveshare", "Hello, world!")
+    t = 0
+    while True:
+        r = int((abs(sin(3.14 * t / 180))) * 255)
+        g = int((abs(sin(3.14 * (t + 60) / 180))) * 255)
+        b = int((abs(sin(3.14 * (t + 120) / 180))) * 255)
+        t = (t + 3) % 360
+
+        screen.set_rgb(r, g, b)
+        screen.write_at_position(
+            str(t).encode() + special_char("°") + b"    ", col=10, row=0
+        )
+
+        sleep(0.3)
