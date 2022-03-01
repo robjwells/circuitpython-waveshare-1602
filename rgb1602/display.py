@@ -3,137 +3,118 @@
 
 from time import sleep
 
-import board
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_struct import UnaryStruct
 from busio import I2C
+from microcontroller import Pin
 
-from colours import *
+from rgb1602.colours import CSS_COLOURS
 
-# NOTE: Change these pins to match your circuit.
-# On the RPi Pico (eg) there lots of I2C pins.
-RGB1602_SDA = board.GP26
-RGB1602_SCL = board.GP27
 
-RGB1602_I2C = I2C(sda=RGB1602_SDA, scl=RGB1602_SCL, frequency=400000)
+class Constants:
+    # Device I2C Addresses
+    LCD_ADDRESS = 0x7C >> 1
+    RGB_ADDRESS = 0xC0 >> 1
 
-# Device I2C Addresses
-LCD_ADDRESS = 0x7C >> 1
-RGB_ADDRESS = 0xC0 >> 1
+    # fmt: off
+    # CGRAM and DDRAM commands but also their memory addresses
+    LCD_COMMAND_REG = 0x80
+    LCD_SETDDRAMADDR = 0x80  # 0b1_______    Display Data RAM
+    LCD_SETCGRAMADDR = 0x40  # 0b_1______    Character Generator RAM
+    LCD_DATA_REG = 0x40
 
-# CGRAM and DDRAM commands but also their memory addresses
-LCD_COMMAND_REG = 0x80
-LCD_SETDDRAMADDR = 0x80  # 0b1_______    Display Data RAM
-LCD_SETCGRAMADDR = 0x40  # 0b_1______    Character Generator RAM
-LCD_DATA_REG = 0x40
+    # RGB registers
+    REG_RED = 0x04      # 0b_1__    pwm2
+    REG_GREEN = 0x03    # 0b__11    pwm1
+    REG_BLUE = 0x02     # 0b__1_    pwm0
+
+    REG_MODE1 = 0x00    # 0b____
+    REG_MODE2 = 0x01    # 0b___1
+    REG_OUTPUT = 0x08   # 0b1___
+
+    # Commands -- bits of an 8-bit word
+    LCD_CLEARDISPLAY = 0x01     # 0b_______1
+    LCD_RETURNHOME = 0x02       # 0b______1_
+
+    LCD_ENTRYMODESET = 0x04     # 0b_____1__
+    # Used with bits I/D SH:
+    #   I/D: 0x02 for entry left, 0x00 for entry right
+    #   SH: 0x01 for shift increment, 0x00 for decrement
+    # See "flags for display entry mode"
+
+    LCD_DISPLAYCONTROL = 0x08   # 0b____1___
+    # Used with bits DCB:
+    #   D: display on/off,
+    #   C: cursor on/off,
+    #   B: blink cursor on/off
+    # These are listed below as "flags for display on/off control"
+
+    LCD_CURSORSHIFT = 0x10      # 0b___1____
+    # Cursor or Display Shift
+    # Uses bits S/C R/L - -:
+    #   S/C: 0x08 for screen or 0x00 for cursor
+    #   R/L: 0x04 for right or 0x00 for left
+
+    LCD_FUNCTIONSET = 0x20      # 0b__1_____
+    # Sets number of display lines, and display font type.
+    # The documentation doesn't mention 8/4 bit mode.
+
+    # flags for display entry mode
+    LCD_ENTRYRIGHT = 0x00           # 0b00
+    LCD_ENTRYLEFT = 0x02            # 0b10
+    LCD_ENTRYSHIFTINCREMENT = 0x01  # 0b01
+    LCD_ENTRYSHIFTDECREMENT = 0x00  # 0b00
+
+    # flags for display on/off control
+    LCD_DISPLAYON = 0x04    # 0b1__
+    LCD_CURSORON = 0x02     # 0b_1_
+    LCD_BLINKON = 0x01      # 0b__1
+
+    LCD_DISPLAYOFF = 0x00   # 0b000
+    LCD_CURSOROFF = 0x00    # 0b000
+    LCD_BLINKOFF = 0x00     # 0b000
+
+    # flags for display/cursor shift
+    LCD_DISPLAYMOVE = 0x08  # 0b1000
+    LCD_CURSORMOVE = 0x00   # 0b0000
+    LCD_MOVERIGHT = 0x04    # 0b0100
+    LCD_MOVELEFT = 0x00     # 0b0000
+
+    # flags for function set
+
+    # I think the modes relate the to the number of bits
+    # sent down the wire at a time, _not_ the colour
+    # depth (as I thought originally).
+    LCD_8BITMODE = 0x10     # 0b10000
+    LCD_4BITMODE = 0x00     # 0b00000
+
+    # Number of lines on the display
+    LCD_2LINE = 0x08        # 0b01000
+    LCD_1LINE = 0x00        # 0b00000
+    LCD_5x8DOTS = 0x00      # 0b00000
+
+    # fmt: on
 
 
 class LCDControl:
     def __init__(self, i2c: I2CDevice):
         self.i2c_device = i2c  # Required by UnaryStruct
 
-    command_register = UnaryStruct(LCD_COMMAND_REG, "<B")
-    data_register = UnaryStruct(LCD_DATA_REG, "<B")
-
-
-comm_port = RGB1602_I2C
-
-lcd_device = I2CDevice(comm_port, LCD_ADDRESS)
-lcd_registers = LCDControl(lcd_device)
-
-# fmt: off
-
-# RGB registers
-REG_RED = 0x04      # 0b_1__    pwm2
-REG_GREEN = 0x03    # 0b__11    pwm1
-REG_BLUE = 0x02     # 0b__1_    pwm0
-
-REG_MODE1 = 0x00    # 0b____
-REG_MODE2 = 0x01    # 0b___1
-REG_OUTPUT = 0x08   # 0b1___
-
-# fmt: on
+    command_register = UnaryStruct(Constants.LCD_COMMAND_REG, "<B")
+    data_register = UnaryStruct(Constants.LCD_DATA_REG, "<B")
 
 
 class RGBControl:
     def __init__(self, i2c: I2CDevice) -> None:
         self.i2c_device = i2c
 
-    REG_RED = UnaryStruct(REG_RED, "<B")
-    REG_GREEN = UnaryStruct(REG_GREEN, "<B")
-    REG_BLUE = UnaryStruct(REG_BLUE, "<B")
+    REG_RED = UnaryStruct(Constants.REG_RED, "<B")
+    REG_GREEN = UnaryStruct(Constants.REG_GREEN, "<B")
+    REG_BLUE = UnaryStruct(Constants.REG_BLUE, "<B")
 
-    REG_MODE1 = UnaryStruct(REG_MODE1, "<B")
-    REG_MODE2 = UnaryStruct(REG_MODE2, "<B")
-    REG_OUTPUT = UnaryStruct(REG_OUTPUT, "<B")
-
-
-rgb_device = I2CDevice(comm_port, RGB_ADDRESS)
-rgb_registers = RGBControl(rgb_device)
-
-
-# fmt: off
-
-# Commands -- bits of an 8-bit word
-LCD_CLEARDISPLAY = 0x01     # 0b_______1
-LCD_RETURNHOME = 0x02       # 0b______1_
-
-LCD_ENTRYMODESET = 0x04     # 0b_____1__
-# Used with bits I/D SH:
-#   I/D: 0x02 for entry left, 0x00 for entry right
-#   SH: 0x01 for shift increment, 0x00 for decrement
-# See "flags for display entry mode"
-
-LCD_DISPLAYCONTROL = 0x08   # 0b____1___
-# Used with bits DCB:
-#   D: display on/off,
-#   C: cursor on/off,
-#   B: blink cursor on/off
-# These are listed below as "flags for display on/off control"
-
-LCD_CURSORSHIFT = 0x10      # 0b___1____
-# Cursor or Display Shift
-# Uses bits S/C R/L - -:
-#   S/C: 0x08 for screen or 0x00 for cursor
-#   R/L: 0x04 for right or 0x00 for left
-
-LCD_FUNCTIONSET = 0x20      # 0b__1_____
-# Sets number of display lines, and display font type.
-# The documentation doesn't mention 8/4 bit mode.
-
-# flags for display entry mode
-LCD_ENTRYRIGHT = 0x00           # 0b00
-LCD_ENTRYLEFT = 0x02            # 0b10
-LCD_ENTRYSHIFTINCREMENT = 0x01  # 0b01
-LCD_ENTRYSHIFTDECREMENT = 0x00  # 0b00
-
-# flags for display on/off control
-LCD_DISPLAYON = 0x04    # 0b1__
-LCD_CURSORON = 0x02     # 0b_1_
-LCD_BLINKON = 0x01      # 0b__1
-
-LCD_DISPLAYOFF = 0x00   # 0b000
-LCD_CURSOROFF = 0x00    # 0b000
-LCD_BLINKOFF = 0x00     # 0b000
-
-# flags for display/cursor shift
-LCD_DISPLAYMOVE = 0x08  # 0b1000
-LCD_CURSORMOVE = 0x00   # 0b0000
-LCD_MOVERIGHT = 0x04    # 0b0100
-LCD_MOVELEFT = 0x00     # 0b0000
-
-# flags for function set
-
-# I think the modes relate the to the number of bits
-# sent down the wire at a time, _not_ the colour
-# depth (as I thought originally).
-LCD_8BITMODE = 0x10     # 0b10000
-LCD_4BITMODE = 0x00     # 0b00000
-LCD_2LINE = 0x08        # 0b01000
-LCD_1LINE = 0x00        # 0b00000
-LCD_5x8DOTS = 0x00      # 0b00000
-
-# fmt: on
+    REG_MODE1 = UnaryStruct(Constants.REG_MODE1, "<B")
+    REG_MODE2 = UnaryStruct(Constants.REG_MODE2, "<B")
+    REG_OUTPUT = UnaryStruct(Constants.REG_OUTPUT, "<B")
 
 
 class Screen:
@@ -142,9 +123,16 @@ class Screen:
     COLS = 16
     ROWS = 2
 
-    rgb: tuple[int, int, int]
+    current_colour: tuple[int, int, int]
 
-    def __init__(self):
+    _i2c: I2C
+    _lcd: LCDControl
+    _rgb: RGBControl
+
+    def __init__(self, sda_pin: Pin, scl_pin: Pin):
+        self._i2c = I2C(sda=sda_pin, scl=scl_pin, frequency=400_000)
+        self._lcd = LCDControl(I2CDevice(self._i2c, Constants.LCD_ADDRESS))
+        self._rgb = RGBControl(I2CDevice(self._i2c, Constants.RGB_ADDRESS))
         self._reset_display()
 
     def _reset_display(self):
@@ -156,19 +144,23 @@ class Screen:
         *obviously unnecessary*, unlike the now-removed lines.
         """
         # Send function set command sequence
-        show_function = LCD_4BITMODE | LCD_2LINE | LCD_5x8DOTS
-        self._command(LCD_FUNCTIONSET | show_function)
+        show_function = (
+            Constants.LCD_4BITMODE | Constants.LCD_2LINE | Constants.LCD_5x8DOTS
+        )
+        self._command(Constants.LCD_FUNCTIONSET | show_function)
         sleep(0.05)
 
         # turn the display on with no cursor or blinking default
-        show_control = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF
-        self._command(LCD_DISPLAYCONTROL | show_control)
+        show_control = (
+            Constants.LCD_DISPLAYON | Constants.LCD_CURSOROFF | Constants.LCD_BLINKOFF
+        )
+        self._command(Constants.LCD_DISPLAYCONTROL | show_control)
 
         self.clear()
 
         # Initialize to default text direction (for romance languages)
-        self._showmode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT
-        self._command(LCD_ENTRYMODESET | self._showmode)
+        self._showmode = Constants.LCD_ENTRYLEFT | Constants.LCD_ENTRYSHIFTDECREMENT
+        self._command(Constants.LCD_ENTRYMODESET | self._showmode)
 
         # backlight init
         self._set_rgb_register("REG_MODE1", 0)
@@ -181,11 +173,11 @@ class Screen:
 
     def _command(self, cmd: int):
         assert 0 <= cmd <= 255, f"Command {cmd} out of range."
-        lcd_registers.command_register = cmd
+        self._lcd.command_register = cmd
 
     def _write_byte(self, data: int) -> None:
         assert 0 <= data <= 255, f"Command {data} out of range."
-        lcd_registers.data_register = data
+        self._lcd.data_register = data
 
     def _set_rgb_register(self, reg: str, data: int) -> None:
         assert reg in (
@@ -197,7 +189,7 @@ class Screen:
             "REG_OUTPUT",
         ), f"Register {reg} is not a known register."
         assert 0 <= data <= 255, f"Data {data} is out of range."
-        setattr(rgb_registers, reg, data)
+        setattr(self._rgb, reg, data)
 
     def _set_rgb_mode(self, mode, value: int) -> None:
         assert 0 <= value <= 0xFF, "Value not in range."
@@ -216,7 +208,7 @@ class Screen:
         self._set_rgb_register("REG_RED", r)
         self._set_rgb_register("REG_GREEN", g)
         self._set_rgb_register("REG_BLUE", b)
-        self.rgb = (r, g, b)
+        self.current_colour = (r, g, b)
 
     def position_cursor(self, *, col: int, row: int):
         assert (
@@ -231,12 +223,14 @@ class Screen:
         else:
             col |= 0xC0
 
-        assert RGB1602_I2C.try_lock(), "Could not lock"
-        RGB1602_I2C.writeto(LCD_ADDRESS, bytearray([LCD_SETDDRAMADDR, col]))
-        RGB1602_I2C.unlock()
+        assert self._i2c.try_lock(), "Could not lock"
+        self._i2c.writeto(
+            Constants.LCD_ADDRESS, bytearray([Constants.LCD_SETDDRAMADDR, col])
+        )
+        self._i2c.unlock()
 
     def clear(self):
-        self._command(LCD_CLEARDISPLAY)
+        self._command(Constants.LCD_CLEARDISPLAY)
         sleep(0.002)
 
     def write_bytes(self, arg: bytes):
@@ -307,44 +301,3 @@ def special_char(c: str) -> bytes:
         return chars[c]
     except KeyError:
         raise ValueError(f"Character {repr(c)} is not a registered special character.")
-
-
-def _show_colours(
-    screen: Screen,
-    delay: int,
-    colours: dict[str, tuple[int, int, int]],
-    colour_set_name: str,
-) -> None:
-    original_rgb = screen.rgb
-    for colour_name, rgb in sorted(colours.items()):
-        screen.set_rgb(*rgb)
-        screen.update(colour_set_name, colour_name)
-        sleep(delay)
-    screen.set_rgb(*original_rgb)
-
-
-def show_css_colours(screen: Screen, delay: int = 2) -> None:
-    _show_colours(screen, delay, CSS_COLOURS, "CSS named colour")
-
-
-def show_waveshare_colours(screen: Screen, delay: int = 2) -> None:
-    _show_colours(screen, delay, WAVESHARE_COLOURS, "Waveshare")
-
-
-def show_discoloration_sample(screen: Screen) -> None:
-    from math import sin
-
-    screen.update(f"Waveshare", "Hello, world!")
-    t = 0
-    while True:
-        r = int((abs(sin(3.14 * t / 180))) * 255)
-        g = int((abs(sin(3.14 * (t + 60) / 180))) * 255)
-        b = int((abs(sin(3.14 * (t + 120) / 180))) * 255)
-        t = (t + 3) % 360
-
-        screen.set_rgb(r, g, b)
-        screen.write_at_position(
-            str(t).encode() + special_char("°") + b"    ", col=10, row=0
-        )
-
-        sleep(0.3)
