@@ -268,6 +268,10 @@ class Screen:
     def set_css_color(self, color_name: str) -> None:
         self.set_css_colour(color_name)
 
+    def set_backlight_power(self, on: bool) -> None:
+        data = 0xFF if on else 0x00
+        self._set_rgb_register("REG_OUTPUT", data)
+
     @staticmethod
     def special_char(c: str) -> bytes:
         if c == "\\":
