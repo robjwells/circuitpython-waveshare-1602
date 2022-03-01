@@ -121,6 +121,10 @@ LCD_MOVERIGHT = 0x04    # 0b0100
 LCD_MOVELEFT = 0x00     # 0b0000
 
 # flags for function set
+
+# I think the modes relate the to the number of bits
+# sent down the wire at a time, _not_ the colour
+# depth (as I thought originally).
 LCD_8BITMODE = 0x10     # 0b10000
 LCD_4BITMODE = 0x00     # 0b00000
 LCD_2LINE = 0x08        # 0b01000
@@ -315,7 +319,7 @@ class Screen:
         *obviously unnecessary*, unlike the now-removed lines.
         """
         # Send function set command sequence
-        show_function = LCD_8BITMODE | LCD_2LINE | LCD_5x8DOTS
+        show_function = LCD_4BITMODE | LCD_2LINE | LCD_5x8DOTS
         self._command(LCD_FUNCTIONSET | show_function)
         sleep(0.05)
 
