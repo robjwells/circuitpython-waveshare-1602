@@ -1,7 +1,7 @@
 from time import sleep
 
 from rgb1602.colours import CSS_COLOURS, WAVESHARE_COLOURS
-from rgb1602.display import Screen, special_char
+from rgb1602.display import Screen
 
 
 def _show_colours(
@@ -39,7 +39,7 @@ def show_discoloration_sample(screen: Screen) -> None:
 
         screen.set_rgb(r, g, b)
         screen.write_at_position(
-            str(t).encode() + special_char("°") + b"    ", col=10, row=0
+            str(t).encode() + screen.special_char("°") + b"    ", col=10, row=0
         )
 
         sleep(0.3)
