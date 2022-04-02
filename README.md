@@ -23,7 +23,7 @@ Place the `rgb1602` directory and all the files under `lib` into the `lib`
 directory of your circuitpython projects.
 
 Import the `rgb1602` library and create an instance of the `Screen` class by
-passing in the pins you’re using for SCL and SDA:
+passing in the pins you’re using for SCL (I2C clock) and SDA (I2C data):
 
 ```python
 from board import GP26, GP27
@@ -47,7 +47,7 @@ Partial updates are possible as well (positions are 0-indexed):
 screen.write_at_position("tonight?", col=4, row=1)
 ```
 
-The `Screen.update` method clears the screen before writing, and can be
+The `Screen.update` method clears the screen before writing, and the screen can be
 cleared separately:
 
 ```python
@@ -140,3 +140,7 @@ library lacks.
 
 _That said_ if you want to do any of that then I’ll gladly look
 at pull requests.
+
+(Also, as is probably clear, this is one of my first projects
+interfacing directly with hardware, so I'd appreciate any
+fixes, improvements and advice!)
