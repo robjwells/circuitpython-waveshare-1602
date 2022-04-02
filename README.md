@@ -152,10 +152,15 @@ you’re thinking “I can use a [Stemma connector][stemma]”. **Please stop!**
 
 Note that on the Waveshare LCD1602 the wires are weirdly mirrored: the
 VCC (red) and ground (black) are swapped, as are the I2C clock (yellow)
-and data (blue). So you _can_ use a Stemma connector but please make
-sure to swap the voltage and ground, and then swap the clock and data
-wires.
+and data (blue).
+
+So you _can_ use a Stemma connector but please make sure to swap the
+voltage and ground, and then swap the clock and data wires. If you’ve
+not done it before, I find using a pair of [needle-tipped tweezers][twz]
+to loosen the plastic tabs in the connector and then shunt out the
+crimped wires works well.
 
 ![The power and I2C wires are both swapped.](swapped-wires.jpeg)
 
 [stemma]: https://learn.adafruit.com/introducing-adafruit-stemma-qt
+[twz]: https://www.ifixit.com/Store/Tools/Precision-Tweezers-Set/IF145-060
