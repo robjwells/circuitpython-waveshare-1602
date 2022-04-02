@@ -151,9 +151,10 @@ The display operates over I2C and has a 4-pin JST PH connector so I’m sure
 you’re thinking “I can use a [Stemma connector][stemma]”. **Please stop!**
 
 Note that on the Waveshare LCD1602 the wires are weirdly mirrored: the
-VCC and ground are swapped, as are the I2C clock and data. So you _can_
-use a Stemma connector but please make sure to swap the voltage and
-ground, and then swap the clock and data wires.
+VCC (red) and ground (black) are swapped, as are the I2C clock (yellow)
+and data (blue). So you _can_ use a Stemma connector but please make
+sure to swap the voltage and ground, and then swap the clock and data
+wires.
 
 ![The power and I2C wires are both swapped.](swapped-wires.jpeg)
 
