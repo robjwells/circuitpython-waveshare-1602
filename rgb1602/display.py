@@ -129,8 +129,8 @@ class Screen:
     _lcd: LCDControl
     _rgb: RGBControl
 
-    def __init__(self, sda_pin: Pin, scl_pin: Pin):
-        self._i2c = I2C(sda=sda_pin, scl=scl_pin, frequency=400_000)
+    def __init__(self, i2c_bus: I2C):
+        self._i2c = i2c_bus
         self._lcd = LCDControl(I2CDevice(self._i2c, Constants.LCD_ADDRESS))
         self._rgb = RGBControl(I2CDevice(self._i2c, Constants.RGB_ADDRESS))
         self._reset_display()
