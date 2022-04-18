@@ -37,8 +37,8 @@ screen = Screen(sda_pin=GP26, scl_pin=GP27)
 To write to the display use the `Screen.update` method, which takes one or two lines:
 
 ```python
-screen("Hello, world!")
-screen("How are", "you today?")
+screen.update("Hello, world!")
+screen.update("How are", "you today?")
 ```
 
 Partial updates are possible as well (positions are 0-indexed):
