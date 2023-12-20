@@ -1,4 +1,4 @@
-CSS_COLOURS: dict[str, tuple[int, int, int]] = {
+CSS_COLOURS = {
     "aliceblue": (240, 248, 255),
     "antiquewhite": (250, 235, 215),
     "aqua": (0, 255, 255),

@@ -19,8 +19,12 @@ and also the [Hitatchi HD44780 datasheet][hd], on which it seems to be based.
 
 ## Usage
 
-Place the `rgb1602` directory and all the files under `lib` into the `lib`
-directory of your circuitpython projects.
+Place the `rgb1602` directory and into the `lib` directory of your circuitpython projects.
+
+Include the following libraries in your `lib` directory:
+
+- `adafruit_bus_device`
+- `adafruit_register`
 
 Import the `rgb1602` library and create an instance of the `Screen` class by
 passing in the pins you’re using for SCL (I2C clock) and SDA (I2C data):

@@ -5,8 +5,6 @@ from time import sleep
 
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_struct import UnaryStruct
-from busio import I2C
-from microcontroller import Pin
 
 from rgb1602.colours import CSS_COLOURS
 
@@ -97,7 +95,7 @@ class Constants:
 
 
 class LCDControl:
-    def __init__(self, i2c: I2CDevice):
+    def __init__(self, i2c):
         self.i2c_device = i2c  # Required by UnaryStruct
 
     command_register = UnaryStruct(Constants.LCD_COMMAND_REG, "<B")
@@ -105,7 +103,7 @@ class LCDControl:
 
 
 class RGBControl:
-    def __init__(self, i2c: I2CDevice) -> None:
+    def __init__(self, i2c):
         self.i2c_device = i2c
 
     REG_RED = UnaryStruct(Constants.REG_RED, "<B")
@@ -123,16 +121,11 @@ class Screen:
     COLS = 16
     ROWS = 2
 
-    current_colour: tuple[int, int, int]
-
-    _i2c: I2C
-    _lcd: LCDControl
-    _rgb: RGBControl
-
-    def __init__(self, i2c_bus: I2C):
+    def __init__(self, i2c_bus):
         self._i2c = i2c_bus
         self._lcd = LCDControl(I2CDevice(self._i2c, Constants.LCD_ADDRESS))
         self._rgb = RGBControl(I2CDevice(self._i2c, Constants.RGB_ADDRESS))
+        self.current_colour = None
         self._reset_display()
 
     def _reset_display(self):
@@ -171,15 +164,15 @@ class Screen:
         self._set_rgb_register("REG_MODE2", 0x20)
         self.set_white()
 
-    def _command(self, cmd: int):
+    def _command(self, cmd):
         assert 0 <= cmd <= 255, f"Command {cmd} out of range."
         self._lcd.command_register = cmd
 
-    def _write_byte(self, data: int) -> None:
+    def _write_byte(self, data):
         assert 0 <= data <= 255, f"Command {data} out of range."
         self._lcd.data_register = data
 
-    def _set_rgb_register(self, reg: str, data: int) -> None:
+    def _set_rgb_register(self, reg, data):
         assert reg in (
             "REG_RED",
             "REG_BLUE",
@@ -191,7 +184,7 @@ class Screen:
         assert 0 <= data <= 255, f"Data {data} is out of range."
         setattr(self._rgb, reg, data)
 
-    def _set_rgb_mode(self, mode: int, value: int) -> None:
+    def _set_rgb_mode(self, mode, value):
         assert 0 <= value <= 0xFF, "Value not in range."
         if mode == 1:
             self._set_rgb_register("REG_MODE1", value)
@@ -200,7 +193,7 @@ class Screen:
         else:
             raise ValueError(f"Unknown mode: {repr(mode)}")
 
-    def set_rgb(self, r: int, g: int, b: int):
+    def set_rgb(self, r, g, b):
         assert 0 <= r <= 255, f"Red value {r} out of range."
         assert 0 <= g <= 255, f"Green value {g} out of range."
         assert 0 <= b <= 255, f"Blue value {b} out of range."
@@ -210,7 +203,7 @@ class Screen:
         self._set_rgb_register("REG_BLUE", b)
         self.current_colour = (r, g, b)
 
-    def position_cursor(self, *, col: int, row: int):
+    def position_cursor(self, *, col, row):
         assert (
             0 <= col < self.COLS
         ), f"Column {col} is out of bounds (max {self.COLS - 1})."
@@ -233,24 +226,22 @@ class Screen:
         self._command(Constants.LCD_CLEARDISPLAY)
         sleep(0.002)
 
-    def write_bytes(self, arg: bytes):
+    def write_bytes(self, arg):
         for byte in arg:
             self._write_byte(byte)
 
-    def write_at_position(self, text: str | bytes, *, col: int, row: int) -> None:
+    def write_at_position(self, text, *, col, row):
         self.position_cursor(col=col, row=row)
         self.write_bytes(self._ensure_bytes(text))
 
     @staticmethod
-    def _ensure_bytes(s: str | bytes) -> bytes:
+    def _ensure_bytes(s) -> bytes:
         if isinstance(s, bytes):
             return s
         # Not JIS X 0213 but close enough if you’re careful.
         return bytes(s, "jisx0213")
 
-    def update(
-        self, first_line: str | bytes, second_line: str | bytes | None = None
-    ) -> None:
+    def update(self, first_line, second_line=None):
         first = self._ensure_bytes(first_line)
         self.clear()
         self.write_bytes(first[: self.COLS])
@@ -259,21 +250,21 @@ class Screen:
             second = self._ensure_bytes(second_line)
             self.write_bytes(second[: self.COLS])
 
-    def set_white(self) -> None:
+    def set_white(self):
         self.set_css_colour("white")
 
-    def set_css_colour(self, colour_name: str) -> None:
+    def set_css_colour(self, colour_name):
         self.set_rgb(*CSS_COLOURS[colour_name])
 
-    def set_css_color(self, color_name: str) -> None:
+    def set_css_color(self, color_name):
         self.set_css_colour(color_name)
 
-    def set_backlight_power(self, on: bool) -> None:
+    def set_backlight_power(self, on):
         data = 0xFF if on else 0x00
         self._set_rgb_register("REG_OUTPUT", data)
 
     @staticmethod
-    def special_char(c: str) -> bytes:
+    def special_char(c):
         if c == "\\":
             raise ValueError("\\ (backslash) is not in the character set.")
         elif ord(c) < ord("}"):
@@ -304,4 +295,6 @@ class Screen:
         try:
             return chars[c]
         except KeyError:
-            raise ValueError(f"Character {repr(c)} is not a registered special character.")
+            raise ValueError(
+                f"Character {repr(c)} is not a registered special character."
+            )

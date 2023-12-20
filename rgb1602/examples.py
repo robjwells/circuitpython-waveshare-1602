@@ -1,15 +1,9 @@
 from time import sleep
 
 from rgb1602.colours import CSS_COLOURS, WAVESHARE_COLOURS
-from rgb1602.display import Screen
 
 
-def _show_colours(
-    screen: Screen,
-    delay: int,
-    colours: dict[str, tuple[int, int, int]],
-    colour_set_name: str,
-) -> None:
+def _show_colours(screen, delay, colours, colour_set_name):
     original_rgb = screen.current_colour
     for colour_name, rgb in sorted(colours.items()):
         screen.set_rgb(*rgb)
@@ -18,18 +12,18 @@ def _show_colours(
     screen.set_rgb(*original_rgb)
 
 
-def show_css_colours(screen: Screen, delay: int = 2) -> None:
+def show_css_colours(screen, delay=2):
     _show_colours(screen, delay, CSS_COLOURS, "CSS named colour")
 
 
-def show_waveshare_colours(screen: Screen, delay: int = 2) -> None:
+def show_waveshare_colours(screen, delay=2):
     _show_colours(screen, delay, WAVESHARE_COLOURS, "Waveshare")
 
 
-def show_discoloration_sample(screen: Screen) -> None:
+def show_discoloration_sample(screen):
     from math import sin
 
-    screen.update(f"Waveshare", "Hello, world!")
+    screen.update("Waveshare", "Hello, world!")
     t = 0
     while True:
         r = int((abs(sin(3.14 * t / 180))) * 255)
