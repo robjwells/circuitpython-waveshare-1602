@@ -26,14 +26,18 @@ Include the following libraries in your `lib` directory:
 - `adafruit_bus_device`
 - `adafruit_register`
 
-Import the `rgb1602` library and create an instance of the `Screen` class by
-passing in the pins you’re using for SCL (I2C clock) and SDA (I2C data):
+Create an instance of the `I2C` class from `busio`, with the data and clock
+pins you're using. Then import the `rgb1602` library and create an instance of
+the `Screen` class by passing in this `I2C` instance.
 
 ```python
 from board import GP26, GP27
 from rgb1602 import Screen
+from busio import I2C
 
-screen = Screen(sda_pin=GP26, scl_pin=GP27)
+sclock, sdata = GP27, GP26
+i2c = I2C(sclock, sdata)
+screen = Screen(i2c)
 ```
 
 ### Writing to the display
